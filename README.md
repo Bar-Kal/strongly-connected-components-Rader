@@ -2,9 +2,9 @@
 
 Rader's algorithm, which is introduced in [Kepner11](#), finds for any graph, represented by its adjacency matrix **A**, its SCC. The algorithm relies on a known relationship in linear algebra, given in equation (1).
 
-\[
+```math
 (I - A)^{-1} = \sum_{n=0}^{\infty} A^n
-\]
+```
 
 Taking this into account, Rader introduces the algorithm given below in equations (2) and (3).
 

@@ -8,19 +8,17 @@ Rader's algorithm, which is introduced in [Kepner11](#), finds for any graph, re
 
 Taking this into account, Rader introduces the algorithm given below in equations (2) and (3).
 
-\[
-\begin{aligned}
-  & C = I + A + \sum_{k=0}^{N} A^k \\
-  & D = C \land C^T
-\end{aligned}
-\]
+```math
+C = I + A + \sum_{k=0}^{N} A^k \\
+D = C &and; C^T
+```
 
 Where:
 - **I**: Identity matrix
 - **A**: Input matrix
 - **N**: Number of vertices
 - **C^T**: Transpose of **C**
-- **\land**: Element-wise AND function
+- **$$&and;$$**: Element-wise AND function
 - **D**: Matrix with SCC's
 
 There is no explicit mention of the stopping criterion in (2). **k** defines the number of steps. If the steps of the biggest SCC are known, the stopping criteria can be specified. The worst case is \(k = N\). According to [Hong13](#), classifying more than 1% of the vertices is enough to detect the largest SCC. A known optimization is also to detect the largest SCC in a naive way, excise it from the input, and then do the parallel calculations on the smaller search space. In [Matei16](#), possible optimizations before starting parallel calculations are given and explained very well.

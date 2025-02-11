@@ -1,3 +1,9 @@
+# Strongly Connected Components
+Strongly Connected Components (SCC) of a directed graph **G** are subsets of vertices **C** such that any two vertices $u, v \in C$ are reachable from each other. In other words, if there is a directed path in the form $u \leadsto v \land v \leadsto u$ then a SCC is found. A shematic view is given in **figure 1**.
+
+![SCC](images/scc.png)
+_Figure 1: An example of a graph with three SCC's. (https://en.wikipedia.org/wiki/File:Scc.png)_
+
 # Implementation of Rader's Algorithm
 
 Rader's algorithm, which is introduced in [Kepner11](#), finds for any graph, represented by its adjacency matrix **A**, its SCC. The algorithm relies on a known relationship in linear algebra, given in equation (1).
@@ -25,12 +31,11 @@ There is no explicit mention of the stopping criterion in (2). **k** defines the
 
 We also need to mention that Rader introduces a more compact form of the algorithm (see equation (4)).
 
-\[
+```math
 D = (I - \alpha A)^{-1}
-\]
+```
 
-Where:
-- **\alpha**: Sufficiently small scalar
+Where: $$\alpha$$ sufficiently small scalar
 
 ## Notes on the Own Implementation on the GPU
 
@@ -40,16 +45,16 @@ During the matrix multiplications (needed to calculate \(A^2 + A^3 + ... + A^n\)
 
 A simple solution to this problem is to set the interim results of the matrix multiplications to 1 if the interim result is non-zero.
 
-The implemented algorithm depends on efficient matrix multiplication. The version using shared memory was therefore implemented with the well-known tiled matrix multiplication. The tiles have a fixed size of \(32 \times 32\) *integers*. The kernel is launched with fixed-size thread-blocks of also \(32 \times 32\) threads, and, depending on the size of the input matrix, with a two-dimensional grid block. The idea of the tiled matrix multiplication is shown in the following figure:
+The implemented algorithm depends on efficient matrix multiplication. The version using shared memory was therefore implemented with the well-known tiled matrix multiplication. The tiles have a fixed size of (32 **x** 32) *integers*. The kernel is launched with fixed-size thread-blocks of also (32 **x** 32) threads, and, depending on the size of the input matrix, with a two-dimensional grid block. The idea of the tiled matrix multiplication is shown in **figure 2**.
 
 ![Schematic view of tiled matrix multiplication. The tiles are sliding over the input matrices, and the matrix multiplication is done on these sub-matrices.](./images/tiled.png)
-*Figure 1: Schematic view of tiled matrix multiplication. The tiles are sliding over the input matrices, and the matrix multiplication is done on these sub-matrices. Figure taken from [ResearchGate](https://www.researchgate.net/figure/Performance-critical-A-B-part-of-the-GEMM-using-a-tiling-strategy-A-thread-iterates_fig1_318107349).*
+*Figure 2: Schematic view of tiled matrix multiplication. The tiles are sliding over the input matrices, and the matrix multiplication is done on these sub-matrices. (https://www.researchgate.net/figure/Performance-critical-A-B-part-of-the-GEMM-using-a-tiling-strategy-A-thread-iterates_fig1_318107349).*
 
 ## Runtime Analysis for Different Memory Strategies
 
-Rader's algorithm was tested for different memory strategies (shared memory, pinned memory, zero-copy) as well as for naive GPU and CPU implementations. Due to the nature of the algorithm, the main bottleneck is the for-loop (as seen in equation (2)). The algorithm defines the number of steps **k** that must be executed to cover all SCCs. In the worst case, \(k = N\) steps must be calculated, which is often the case. This could be changed if **k** is known, the largest SCC is detected and removed from the input matrix as described in [Hong13](#), or if only small SCCs should be found within a given **k**.
+Rader's algorithm was tested for different memory strategies (shared memory, pinned memory, zero-copy) as well as for naive GPU and CPU implementations. Due to the nature of the algorithm, the main bottleneck is the for-loop (as seen in equation (2)). The algorithm defines the number of steps **k** that must be executed to cover all SCCs. In the worst case, (k = N) steps must be calculated, which is often the case. This could be changed if **k** is known, the largest SCC is detected and removed from the input matrix as described in [Hong13], or if only small SCCs should be found within a given **k**.
 
-Because of these factors, runtime analysis was not very fruitful. For \(N > 1000\), the runtimes, including the shared memory implementation, were over 1 second. Therefore, no deep runtime analysis was conducted for Rader’s algorithm, and this implementation is not included in the differential testing framework explained in section (##).
+Because of these factors, runtime analysis was not very fruitful. For (N > 1000), the runtimes, including the shared memory implementation, were over 1 second. Therefore, no deep runtime analysis was conducted for Rader’s algorithm.
 
 ## Compiling and Options
 
@@ -76,11 +81,22 @@ In the file **rader.cuh**, the memory strategy to be used can be specified. In t
 
 (Warning messages may appear during compilation if not all memory strategies are set to 1.)
 
-\bibitem[Hon13]{Hong13}
-Hong, Sungpack and Rodia, Nicole C. and Olukotun, Kunle.
-\textit{On Fast Parallel Detection of Strongly Connected Components (SCC) in Small-World Graphs}. Proceedings of the International Conference on High Performance Computing, Networking, Storage and Analysis, Nov 2013, Denver, USA. Article No:92 Pages 1-11, 10.1145/2503210.2503246
+[Ban16]
+Bang Di, Jianhua Sun, Hao Chen.
+*A Study of Overflow Vulnerabilities on GPUs*.
+13th IFIP International Conference on Network and Parallel Computing (NPC), Oct 2016, Xi'an, China. pp. 103-115, 10.1007/978-3-319-47099-3\_9. hal-016448002
 
-\bibitem[Kep11]{Kepner11}
+[Hon13]
+Hong, Sungpack and Rodia, Nicole C. and Olukotun, Kunle.
+*On Fast Parallel Detection of Strongly Connected Components (SCC) in Small-World Graphs*.
+Proceedings of the International Conference on High Performance Computing, Networking, Storage and Analysis, Nov 2013, Denver, USA. Article No:92 Pages 1-11, 10.1145/2503210.2503246
+
+[Kep11]
 Kepner, Jeremy and Gilbert, John.
-\textit{Graph Algorithms in the Language of Linear Algebra}.
+*Graph Algorithms in the Language of Linear Algebra*.
 Society for Industrial and Applied Mathematics, 2011, USA. pp. 19-23, 10.5555/2039367.
+
+[Mat16]
+Vera Matei.
+*Parallel Algorithms for Detecting Strongly Connected Components*.
+Master thesis, Vrije Universiteit Amsterdam, 2016
